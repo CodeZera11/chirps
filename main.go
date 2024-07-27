@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -64,60 +63,4 @@ func (cfg *apiConfig) handlerCheckHits(w http.ResponseWriter, _ *http.Request) {
 func (cfg *apiConfig) handlerReset(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	cfg.fileServerHits = 0
-}
-
-func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
-
-	type errorType struct {
-		Error string `json:"error"`
-	}
-
-	type respType struct {
-		Valid bool `json:"valid"`
-	}
-
-	type parameters struct {
-		Body string `json:"body"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-
-	params := parameters{}
-
-	err := decoder.Decode(&params)
-
-	if err != nil {
-		log.Printf("Error decoding parameters: %s", err)
-		
-		err := errorType{
-			Error: "Something went wrong",
-		}
-
-		dat, _ := json.Marshal(err)
-
-		w.Write(dat)
-		w.WriteHeader(500)
-		return
-	}
-
-	if len(params.Body) > 140 {
-		err := errorType{
-			Error: "Chirp is too long",
-		}
-
-		dat, _ := json.Marshal(err)
-
-		w.WriteHeader(400)
-		w.Write(dat)
-		return
-	}
-
-	resp := respType{
-		Valid: true,
-	}
-
-	data, _ := json.Marshal(resp)
-
-	w.WriteHeader(200)
-	w.Write(data)
 }
