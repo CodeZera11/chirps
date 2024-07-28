@@ -4,11 +4,29 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/codezera11/chirps/internal/database"
 )
 
+type apiConfig struct {
+	fileServerHits int
+	DB *database.DB
+}
 
 func main() {
+	const filerootpath = "."
 	const port = "8080"
+
+	db, err := database.NewDB("database.json")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	apiCfg := apiConfig{
+		fileServerHits: 0,
+		DB: db,
+	}
 
 	mux := http.NewServeMux()
 
@@ -17,21 +35,17 @@ func main() {
 		Handler: mux,
 	}
 
-	apiCfg := apiConfig{}
-
-	mux.Handle("/app/*",	apiCfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer((http.Dir("."))))))
+	mux.Handle("/app/*",	apiCfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer((http.Dir(filerootpath))))))
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerCheckHits)
 	mux.HandleFunc("/api/reset", apiCfg.handlerReset)
-	mux.HandleFunc("POST /api/validate_chirp", handlerValidateChirp)
+	mux.HandleFunc("POST /api/chirps", apiCfg.handlerCreateChirp)
+	mux.HandleFunc("GET /api/chirps", apiCfg.handlerGetChirps)
+	mux.HandleFunc("GET /api/chirps/{id}", apiCfg.handlerGetOneChirp)
 
 	log.Printf("Serving on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())
-}
-
-type apiConfig struct {
-	fileServerHits int
 }
 
 func handlerReadiness(w http.ResponseWriter, _ *http.Request) {
