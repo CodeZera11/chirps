@@ -20,4 +20,10 @@ type Chirp struct {
 type User struct{
 	ID int`json:"id"`
 	Email string`json:"email"`
+	Password string`json:"password"`
+}
+
+type RespUser struct {
+	ID int`json:"id"`
+	Email string`json:"email"`
 }
