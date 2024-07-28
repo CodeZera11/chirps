@@ -5,4 +5,4 @@ run: build
 	@./bin/chirps
 
 test:
-	go test -v ./...
+	go test -v ./... --debug
