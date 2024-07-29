@@ -4,18 +4,29 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/codezera11/chirps/internal/database"
+	"github.com/joho/godotenv"
 )
 
 type apiConfig struct {
 	fileServerHits int
 	DB *database.DB
+	jwtSecret string
 }
 
 func main() {
 	const filerootpath = "."
 	const port = "8080"
+
+	godotenv.Load()
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	if jwtSecret == "" {
+		log.Fatal("JWT Secret not set!")
+	}
 
 	db, err := database.NewDB("database.json")
 
@@ -26,6 +37,7 @@ func main() {
 	apiCfg := apiConfig{
 		fileServerHits: 0,
 		DB: db,
+		jwtSecret: jwtSecret,
 	}
 
 	mux := http.NewServeMux()
@@ -45,6 +57,9 @@ func main() {
 	mux.HandleFunc("GET /api/chirps/{id}", apiCfg.handlerGetOneChirp)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)
 	mux.HandleFunc("POST /api/login", apiCfg.handleLoginUser)
+	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser)
+	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
+	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevoke)
 
 	log.Printf("Serving on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())

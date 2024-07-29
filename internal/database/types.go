@@ -1,6 +1,12 @@
 package database
 
-import "sync"
+import (
+	"errors"
+	"sync"
+	"time"
+)
+
+var ErrNotFound = errors.New("resource not found")
 
 type DB struct {
 	path string
@@ -21,9 +27,6 @@ type User struct{
 	ID int`json:"id"`
 	Email string`json:"email"`
 	Password string`json:"password"`
-}
-
-type RespUser struct {
-	ID int`json:"id"`
-	Email string`json:"email"`
+	RefreshToken string`json:"refresh_token"`
+	ExpiresAt time.Time`json:"expires_at"`
 }
