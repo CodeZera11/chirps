@@ -2,7 +2,7 @@ package database
 
 import "os"
 
-func (db *DB) CreateChirp(body string) (Chirp, error) {
+func (db *DB) CreateChirp(body string, authorId int) (Chirp, error) {
 	dbStructure, err := db.loadDB()
 
 	if err != nil {
@@ -12,6 +12,7 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 	chirp := Chirp{
 		ID: id,
 		Body: body,
+		AuthorId: authorId,
 	}
 
 	dbStructure.Chirps[id] = chirp

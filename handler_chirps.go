@@ -8,14 +8,38 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/codezera11/chirps/internal/auth"
 )
 
 type Chirp struct {
 	ID int`json:"id"`
 	Body string`json:"body"`
+	AuthorId int`json:"author_id"`
 }
 
 func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request) {
+
+	token, err := auth.GetBearerToken(r.Header)
+
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Please login to continue")
+		return
+	}
+
+	idString, err := auth.ValidateJWT(token, cfg.jwtSecret)
+
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Error validating jwt")
+		return
+	}
+
+	id, err := strconv.Atoi(idString)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error converting id")
+		return
+	}
 
 	type reqBody struct {
 		Body string`json:"body"`
@@ -24,7 +48,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	decoder := json.NewDecoder(r.Body)
 	params := reqBody{}
 
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 
 	if err != nil {
 		respondWithError(w, 500, "Error decoding request body")
@@ -43,7 +67,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	chirp, err := cfg.DB.CreateChirp(cleanedInput)
+	chirp, err := cfg.DB.CreateChirp(cleanedInput, id)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp")
@@ -53,6 +77,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	respondWithJSON(w, http.StatusCreated, Chirp{
 		ID: chirp.ID,
 		Body: chirp.Body,
+		AuthorId: chirp.AuthorId,
 	})
 }
 
@@ -81,7 +106,6 @@ func validateInput(val string) (string, error) {
 func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 	dbChirps, err := cfg.DB.GetChirps()
 
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error getting chirps")
 		return 
@@ -93,6 +117,7 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 		chirps = append(chirps, Chirp{
 			ID: dbChirp.ID,
 			Body: dbChirp.Body,
+			AuthorId: dbChirp.AuthorId,
 		})
 	}
 
