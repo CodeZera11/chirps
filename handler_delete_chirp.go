@@ -12,8 +12,6 @@ func (cfg *apiConfig) handlerDeleteChirp(w http.ResponseWriter, r *http.Request)
 
 	token, err := auth.GetBearerToken(r.Header)
 
-	fmt.Println("token", token)
-
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Token not found")
 		return
@@ -35,8 +33,6 @@ func (cfg *apiConfig) handlerDeleteChirp(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fmt.Println("id here", id)
-
 	chirpIdStr := r.PathValue("chirpId")
 
 	chirpId, err := strconv.Atoi(chirpIdStr)
@@ -46,19 +42,12 @@ func (cfg *apiConfig) handlerDeleteChirp(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fmt.Println("chirp id here", chirpId)
-
 	dbChirp, err := cfg.DB.GetOneChirp(chirpId)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error finding chirp")
 		return
 	}
-
-	fmt.Println("db chirp here", dbChirp)
-
-	fmt.Println("db chirp authorId and id here", dbChirp.AuthorId, dbChirp.ID)
-
 
 	if dbChirp.AuthorId != id {
 		respondWithError(w, http.StatusForbidden, "Unauthorized")
