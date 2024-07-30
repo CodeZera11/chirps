@@ -106,6 +106,7 @@ func validateInput(val string) (string, error) {
 func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 
 	authorIdStr := r.URL.Query().Get("author_id")
+	sortBy := r.URL.Query().Get("sort")
  	authorId := 0
 
 	if authorIdStr != "" {
@@ -114,6 +115,10 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			authorId = id
 		}
+	}
+
+	if sortBy == "" {
+		sortBy = "asc"
 	}
 
 	dbChirps, err := cfg.DB.GetChirps(authorId)
@@ -133,7 +138,13 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	sort.Slice(chirps, func(i, j int) bool { return chirps[i].ID < chirps[j].ID })
+	if sortBy == "asc" {
+		sort.Slice(chirps, func(i, j int) bool { return chirps[i].ID < chirps[j].ID })
+	} else if sortBy == "desc" {
+		sort.Slice(chirps, func(i, j int) bool { return chirps[i].ID > chirps[j].ID })
+	}
+
+	// sort.Slice(chirps, func(i, j int) bool { return chirps[i].ID < chirps[j].ID })
 
 	respondWithJSON(w, http.StatusOK, chirps)
 }
