@@ -3,12 +3,19 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/codezera11/chirps/internal/auth"
 )
 
 func (cfg *apiConfig) handlerWebook(w http.ResponseWriter, r *http.Request) {
-	// type Data struct {
-	// 	UserId: int
-	// }
+
+	_, err := auth.GetApiKey(r.Header)
+
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Api key not found")
+		return
+	}
+
 	type request struct {
 		Event string`json:"event"`
 		Data struct{
@@ -20,7 +27,7 @@ func (cfg *apiConfig) handlerWebook(w http.ResponseWriter, r *http.Request) {
 
 	params := request{}
 
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error decoding params")

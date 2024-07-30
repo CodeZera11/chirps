@@ -104,7 +104,19 @@ func validateInput(val string) (string, error) {
 }
 
 func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
-	dbChirps, err := cfg.DB.GetChirps()
+
+	authorIdStr := r.URL.Query().Get("author_id")
+ 	authorId := 0
+
+	if authorIdStr != "" {
+		id, err := strconv.Atoi(authorIdStr)
+
+		if err == nil {
+			authorId = id
+		}
+	}
+
+	dbChirps, err := cfg.DB.GetChirps(authorId)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error getting chirps")
