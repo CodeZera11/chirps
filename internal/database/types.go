@@ -30,4 +30,6 @@ type User struct{
 	Password string`json:"password"`
 	RefreshToken string`json:"refresh_token"`
 	ExpiresAt time.Time`json:"expires_at"`
+	IsChirpyRed bool`json:"is_chirpy_red"`
+	
 }

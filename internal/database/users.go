@@ -33,6 +33,7 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 		ID: id,
 		Email: email,
 		Password: hashedPassword,
+		IsChirpyRed: false,
 	}
 
 	dbStructure.Users[id] = user
@@ -44,6 +45,24 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	}
 	
 	return user, nil
+}
+
+func (db *DB) GetUserById(id int) (User, error) {
+	dbStructure, err := db.loadDB()
+
+	if err != nil {
+		return User{}, err
+	}
+
+	users := dbStructure.Users
+
+	for _, user := range users {
+		if user.ID == id {
+			return user, nil
+		}
+	}
+
+	return User{}, errors.New("user not found")
 }
 
 func (db *DB) GetUserByEmail(email string) (User, error) {
@@ -179,4 +198,30 @@ func (db *DB) RevokeRefreshToken(token, secret string) error {
 	}
 
 	return errors.New("error revoking refresh token")
+}
+
+func (db *DB) UpdateMembership(id int) error {
+	dbStructure, err := db.loadDB()
+
+	if err != nil {
+		return  err
+	}
+
+	user, ok := dbStructure.Users[id]
+
+	if !ok {
+		return  errors.New("User does not exist")
+	}
+
+	user.IsChirpyRed = true
+
+	dbStructure.Users[id] = user
+
+	err = db.writeDB(dbStructure)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

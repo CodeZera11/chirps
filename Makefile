@@ -2,7 +2,7 @@ build:
 	@go build -o bin/chirps
 
 run: build
-	@./bin/chirps
+	@rm -r database.json && ./bin/chirps
 
 test:
 	go test -v ./... --debug
