@@ -13,9 +13,9 @@ import (
 )
 
 type Chirp struct {
-	ID int`json:"id"`
-	Body string`json:"body"`
-	AuthorId int`json:"author_id"`
+	ID       int    `json:"id"`
+	Body     string `json:"body"`
+	AuthorId int    `json:"author_id"`
 }
 
 func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	}
 
 	type reqBody struct {
-		Body string`json:"body"`
+		Body string `json:"body"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -75,8 +75,8 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	}
 
 	respondWithJSON(w, http.StatusCreated, Chirp{
-		ID: chirp.ID,
-		Body: chirp.Body,
+		ID:       chirp.ID,
+		Body:     chirp.Body,
 		AuthorId: chirp.AuthorId,
 	})
 }
@@ -86,7 +86,7 @@ func validateInput(val string) (string, error) {
 	profaneWords := []string{"kerfuffle", "sharbert", "fornax"}
 
 	if len(val) == 0 {
-		return "", errors.New("please send a message") 
+		return "", errors.New("please send a message")
 	}
 
 	words := strings.Split(val, " ")
@@ -107,7 +107,7 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 
 	authorIdStr := r.URL.Query().Get("author_id")
 	sortBy := r.URL.Query().Get("sort")
- 	authorId := 0
+	authorId := 0
 
 	if authorIdStr != "" {
 		id, err := strconv.Atoi(authorIdStr)
@@ -125,15 +125,15 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error getting chirps")
-		return 
+		return
 	}
 
 	chirps := []Chirp{}
 
 	for _, dbChirp := range dbChirps {
 		chirps = append(chirps, Chirp{
-			ID: dbChirp.ID,
-			Body: dbChirp.Body,
+			ID:       dbChirp.ID,
+			Body:     dbChirp.Body,
 			AuthorId: dbChirp.AuthorId,
 		})
 	}
